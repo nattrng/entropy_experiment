@@ -8,7 +8,7 @@ from evals.arc import ARC
 from evals.mmlu import MMLU
 from evals.hellaswag import HellaSwag
 
-device = 'mps' if torch.mps.is_available() else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 dtype = torch.bfloat16
 
 
