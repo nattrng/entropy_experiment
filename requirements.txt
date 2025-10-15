@@ -1,7 +1,7 @@
 torch==2.8.0+cu128
 torchvision==0.23.0+cu128
 torchaudio==2.8.0+cu128
-transformers==4.44.2
+transformers==4.57.1
 datasets==3.1.0
 huggingface-hub==0.26.5
 hf-transfer==0.1.9
