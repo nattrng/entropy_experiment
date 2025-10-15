@@ -22,7 +22,7 @@ class HellaSwag:
         # HellaSwag supports the 'default' config; keep checks similar to other evals
         assert split in ["train", "validation", "test", "dev"], "HellaSwag split must be train|validation|dev|test"
         # load and shuffle for reproducibility
-        self.ds = load_dataset("hellaswag/hellaswag", split=split).shuffle(seed=42)
+        self.ds = load_dataset("hellaswag", split=split).shuffle(seed=42)
 
     def num_examples(self):
         return len(self.ds)
