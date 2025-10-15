@@ -1,0 +1,10 @@
+# Pinned minimal runtime dependencies for reproducible installs.
+# Adjust the torch line to match the target machine (CUDA version).
+# Example: pip install torch==2.2.0+cu118 -f https://download.pytorch.org/whl/cu118/torch_stable.html
+datasets==2.12.0
+transformers==4.35.2
+huggingface-hub==0.18.1
+numpy==1.26.4
+matplotlib==3.10.2
+tqdm==4.66.5
+torch==2.8.0
