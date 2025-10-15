@@ -3,4 +3,4 @@
 
 Just clone the repo and hit a quick "pip install -r requirements.txt".
 
-Primarily made for CUDA
+Ensure that you have sufficient vram for your models.
