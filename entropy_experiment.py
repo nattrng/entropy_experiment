@@ -51,8 +51,8 @@ for label in models:
         # if task == evals[0]:
         #     num_examples = task.num_examples()
         # else:
-        for batch in tqdm(range(task.num_examples() // batch_size), desc=f'{label}'):
-            for i in range(num_examples):
+        for batch in tqdm(range(batch_size, task.num_examples(), batch_size), desc=f'{label}')):
+            for ex in range(batch):
                 ex = task.get_example(i)
                 shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
                 
@@ -62,7 +62,6 @@ for label in models:
                 if task.evaluate(ex, model_pred) == True: 
                     models[label][0].append(entropy) 
                 else: models[label][1].append((entropy))
-
 
     del model
     del tokenizer
