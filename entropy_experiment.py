@@ -44,7 +44,7 @@ def get_logprobs(model, tokenizer, messages, letters):
 
 for label in models:
 
-    model = AutoModelForCausalLM.from_pretrained(label, torch_dtype=dtype, device_map=device, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(label, dtype=dtype, device_map=device, trust_remote_code=True)
     tokenizer = AutoTokenizer.from_pretrained(label, trust_remote_code=True)
     
     for task in evals:
