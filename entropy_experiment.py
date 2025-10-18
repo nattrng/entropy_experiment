@@ -7,13 +7,13 @@ from tqdm import tqdm
 from evals.arc import ARC
 from evals.mmlu import MMLU
 from evals.hellaswag import HellaSwag
+from models import model_list
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 dtype = torch.bfloat16
 batch_size = 300
 
 
-model_list = ['Qwen/Qwen3-Next-80B-A3B-Instruct', 'NousResearch/Hermes-4-70B', 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B', 'mistralai/Mistral-Small-3.2-24B-Instruct-2506']
 models = {label: [[], []] for label in model_list}
 evals = [ARC("ARC-Challenge", "test"), MMLU("all", "test"), HellaSwag("default", "validation")]
 
