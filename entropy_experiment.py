@@ -10,6 +10,7 @@ from evals.hellaswag import HellaSwag
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 dtype = torch.bfloat16
+batch_size = 300
 
 
 model_list = ['Qwen/Qwen3-Next-80B-A3B-Instruct', 'NousResearch/Hermes-4-70B', 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B', 'mistralai/Mistral-Small-3.2-24B-Instruct-2506']
@@ -47,20 +48,20 @@ for label in models:
     tokenizer = AutoTokenizer.from_pretrained(label, trust_remote_code=True)
     
     for task in evals:
-        if task == evals[0]:
-            num_examples = task.num_examples()
-        else:
-            num_examples = 5000
-        for i in tqdm(range(num_examples), desc=f'{label}'):
-            ex = task.get_example(i)
-            shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
-            
-            model_probs, model_pred = get_logprobs(model, tokenizer, ex["messages"][:-1], ex["letters"])
-            entropy = shannon_entropy(model_probs)
-
-            if task.evaluate(ex, model_pred) == True: 
-                models[label][0].append(entropy) 
-            else: models[label][1].append((entropy))
+        # if task == evals[0]:
+        #     num_examples = task.num_examples()
+        # else:
+        for batch in tqdm(range(task.num_examples() // batch_size), desc=f'{label}'):
+            for i in range(num_examples):
+                ex = task.get_example(i)
+                shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
+                
+                model_probs, model_pred = get_logprobs(model, tokenizer, ex["messages"][:-1], ex["letters"])
+                entropy = shannon_entropy(model_probs)
+    
+                if task.evaluate(ex, model_pred) == True: 
+                    models[label][0].append(entropy) 
+                else: models[label][1].append((entropy))
 
 
     del model
