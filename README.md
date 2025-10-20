@@ -3,8 +3,9 @@
 
 1) conda create --name entropy_experiment python=3.12.2
 2) conda activate entropy_experiment
-3) pip install -r requirements.txt
-4) python entropy_experiment.py
+3) https://github.com/nattrng/entropy_experiment.git
+4) pip install -r requirements.txt
+5) python entropy_experiment.py
 
 Just clone the repo and hit a quick "pip install -r requirements.txt".
 
