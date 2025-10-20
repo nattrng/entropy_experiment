@@ -10,3 +10,5 @@
 Just clone the repo and hit a quick "pip install -r requirements.txt".
 
 Ensure that you have sufficient vram for your models.
+
+make it so that it also lists # of times it got the weong answer rather than only displaying avg entropy
