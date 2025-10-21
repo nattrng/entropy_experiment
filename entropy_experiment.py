@@ -52,7 +52,7 @@ for label in models:
         #     num_examples = task.num_examples()
         # else:
         for batch in tqdm(range(batch_size, task.num_examples(), batch_size), desc=f'{label}'):
-            for ex in range(batch):
+            for i in range(batch):
                 ex = task.get_example(i)
                 shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
                 
