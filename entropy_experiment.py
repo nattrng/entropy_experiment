@@ -15,7 +15,11 @@ batch_size = 300
 
 
 models = {label: [[], []] for label in model_list}
-evals = [ARC("ARC-Challenge", "test"), MMLU("all", "test"), HellaSwag("default", "validation")]
+evals = [
+    [ARC("ARC-Challenge", "test"), "ARC-Challenge"], 
+    [MMLU("all", "test"), "MMLU"], 
+    [HellaSwag("default", "validation"), "HellaSwag"]
+]
 
 def get_logprobs(model, tokenizer, messages, letters):
     if hasattr(tokenizer, 'chat_template') and tokenizer.chat_template is not None:
@@ -51,15 +55,15 @@ for label in models:
         # if task == evals[0]:
         #     num_examples = task.num_examples()
         # else:
-        for batch in tqdm(range(batch_size, task.num_examples(), batch_size), desc=f'{label}'):
+        for batch in tqdm(range(batch_size, task[0].num_examples(), batch_size), desc=f'{task[1]}'):
             for i in range(batch):
-                ex = task.get_example(i)
+                ex = task[0].get_example(i)
                 shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
                 
                 model_probs, model_pred = get_logprobs(model, tokenizer, ex["messages"][:-1], ex["letters"])
                 entropy = shannon_entropy(model_probs)
     
-                if task.evaluate(ex, model_pred) == True: 
+                if task[0].evaluate(ex, model_pred) == True: 
                     models[label][0].append(entropy) 
                 else: models[label][1].append((entropy))
 
