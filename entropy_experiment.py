@@ -22,7 +22,7 @@ dtype = torch.bfloat16
 batch_size = 300
 
 evals = [
-    [ARC("ARC-Challenge", "test"), "ARC-Challenge"]#, 
+    [ARC("ARC-Challenge", "test"), "ARC-Challenge"], 
     [MMLU("all", "test"), "MMLU"], 
     [HellaSwag("default", "validation"), "HellaSwag"]
 ]
