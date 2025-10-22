@@ -21,7 +21,7 @@ class HellaSwag:
     def __init__(self, subset, split):
         # HellaSwag supports the 'default' config; keep checks similar to other evals
         assert split in ["train", "validation", "test", "dev"], "HellaSwag split must be train|validation|dev|test"
-        # load and shuffle for reproducibility
+        # load and shuffle for reproducibility 
         self.ds = load_dataset("hellaswag", split=split).shuffle(seed=42)
 
     def num_examples(self):
@@ -36,10 +36,11 @@ class HellaSwag:
         if choices is None:
             # fall back: try keys that sometimes appear
             choices = [row.get(k, "") for k in ("ending0", "ending1", "ending2", "ending3")]
-
         # ensure we have 4 choices
         assert len(choices) == 4, f"HellaSwag example must have 4 choices, found {len(choices)}"
         answer_idx = row.get("label")
+        # print(f"Test Print: {answer_idx}")
+        answer_idx = int(answer_idx)
         assert answer_idx is None or 0 <= answer_idx < 4, "HellaSwag label must be in 0..3 or None"
 
         # render MC-like prompt (context + choices)
