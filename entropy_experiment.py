@@ -4,19 +4,25 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from evals.arc import ARC
-from evals.mmlu import MMLU
-from evals.hellaswag import HellaSwag
+from evals.mcq.arc import ARC
+from evals.mcq.mmlu import MMLU
+from evals.mcq.hellaswag import HellaSwag
 from models import model_list
+import os
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+os.makedirs("model_entropy_charts", exist_ok=True)
+
+if torch.cuda.is_available():
+    device = 'cuda'
+elif torch.mps.is_available():
+    device = 'mps'
+else:
+    device = 'cpu'
 dtype = torch.bfloat16
 batch_size = 300
 
-
-models = {label: [[], []] for label in model_list}
 evals = [
-    [ARC("ARC-Challenge", "test"), "ARC-Challenge"], 
+    [ARC("ARC-Challenge", "test"), "ARC-Challenge"]#, 
     [MMLU("all", "test"), "MMLU"], 
     [HellaSwag("default", "validation"), "HellaSwag"]
 ]
@@ -45,27 +51,48 @@ def get_logprobs(model, tokenizer, messages, letters):
     probs = torch.softmax(letter_logits, dim=0).float()
     return probs, letters[probs.argmax().item()]
 
+def save_graph(model_name, eval_names, eval_entropies):
 
-for label in models:
+    avg_true_eval_entropy = [torch.tensor(values[0]).mean() for values in eval_entropies.values()]
+    avg_false_eval_entropy = [torch.tensor(values[1]).mean() for values in eval_entropies.values()]
 
-    model = AutoModelForCausalLM.from_pretrained(label, dtype=dtype, device_map=device, trust_remote_code=True)
+
+    x = np.arange(len(eval_names))
+    width = 0.35
+    plt.figure(figsize=(12,6))
+    plt.bar(x - width/2, avg_true_eval_entropy, width, label='Entropy (True)', color = 'blue')
+    plt.bar(x + width/2, avg_false_eval_entropy, width, label='Entropies (False)', color = 'gray')
+
+    plt.title(f'{model_name}: Entropy Evaluations')
+    plt.xlabel('Benchmarks')
+    plt.ylabel('Shannon Entropy')
+
+    plt.xticks(x, eval_names, rotation=45, ha='right')
+    plt.legend()
+    edited_name = model_name.replace("/","_")
+    plt.savefig(os.path.join("model_entropy_charts", f'{edited_name}_entropy_comparisons.png'), dpi=300, bbox_inches='tight')
+
+
+for label in model_list:
+    model = AutoModelForCausalLM.from_pretrained(label, dtype=dtype, trust_remote_code=True).to(device)
     tokenizer = AutoTokenizer.from_pretrained(label, trust_remote_code=True)
+    eval_names = [eval[1] for eval in evals]
+    eval_entropies = {eval[1]: [[], []] for eval in evals} # idx 1 denotes true while idx 2 denotes false
     
-    for task in evals:
-        # if task == evals[0]:
-        #     num_examples = task.num_examples()
-        # else:
-        for batch in tqdm(range(batch_size, task[0].num_examples(), batch_size), desc=f'{task[1]}'):
-            for i in range(batch):
-                ex = task[0].get_example(i)
+    for eval in evals:
+        for batch in tqdm(range(batch_size, eval[0].num_examples(), batch_size), desc=f'{eval[1]}'):
+            for i in range(batch - batch_size, batch):
+                ex = eval[0].get_example(i)
                 shannon_entropy = lambda probs: -(probs.float().clamp(min=1e-10) * torch.log2(probs.float().clamp(min=1e-10) + 1e-9)).sum()
                 
                 model_probs, model_pred = get_logprobs(model, tokenizer, ex["messages"][:-1], ex["letters"])
                 entropy = shannon_entropy(model_probs)
     
-                if task[0].evaluate(ex, model_pred) == True: 
-                    models[label][0].append(entropy) 
-                else: models[label][1].append((entropy))
+                if eval[0].evaluate(ex, model_pred) == True: 
+                    eval_entropies[eval[1]][0].append(entropy) 
+                else: eval_entropies[eval[1]][1].append(entropy)
+    
+    save_graph(label, eval_names, eval_entropies)
 
     del model
     del tokenizer
@@ -73,31 +100,3 @@ for label in models:
         torch.mps.empty_cache()
     if device == "cuda":
         torch.cuda.empty_cache()
-
-true_entropies = []
-false_entropies = []
-
-for label in models:
-    true_entropy_mean = torch.tensor(models[label][0]).sum() / torch.tensor(models[label][0]).numel()
-    true_entropies.append(true_entropy_mean.item())
-    false_entropy_mean = torch.tensor(models[label][1]).sum() / torch.tensor(models[label][1]).numel()
-    false_entropies.append(false_entropy_mean.item())
-    print(f"{label}: True Average Shannon Entropy: {true_entropy_mean:.3f} | False Average Shannon Entropy {false_entropy_mean:.3f}")
-
-x = np.arange(len(model_list))
-width = 0.35
-
-plt.figure(figsize=(12, 6)) 
-plt.bar(x - width/2, true_entropies, width, label='Entropy (True)', color = 'blue')
-plt.bar(x + width/2, false_entropies, width, label='Entropies (False)', color = 'gray')
-
-plt.title('Collated Entropies Over Several Models')
-plt.xlabel('Models')
-plt.ylabel('Shannon Entropy')
-
-plt.xticks(x, model_list, rotation=45, ha='right')
-plt.legend()
-plt.savefig('entropy_comparison.png', dpi=300, bbox_inches='tight')
-plt.show()
-
-# I changed it so that it processes each model sequentially rather than switching back and forth (bloats up memory swap).
