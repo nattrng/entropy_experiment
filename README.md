@@ -10,3 +10,5 @@ In this setting, entropy is referring to shannon entropy. It is not equivalent t
 5) ```python entropy_experiment.py```
 
 Ensure that you have sufficient VRAM for your models.
+
+<img width="3030" height="1843" alt="image" src="https://github.com/user-attachments/assets/7a84749d-3f9c-410c-ae75-c79524d2a54c" />
