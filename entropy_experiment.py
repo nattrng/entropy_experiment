@@ -60,8 +60,8 @@ def save_graph(model_name, eval_names, eval_entropies):
     x = np.arange(len(eval_names))
     width = 0.35
     plt.figure(figsize=(12,6))
-    plt.bar(x - width/2, avg_true_eval_entropy, width, label='Entropy (True)', color = 'blue')
-    plt.bar(x + width/2, avg_false_eval_entropy, width, label='Entropies (False)', color = 'gray')
+    plt.bar(x - width/2, avg_true_eval_entropy, width, label='Average Entropy (True)', color = 'blue')
+    plt.bar(x + width/2, avg_false_eval_entropy, width, label='Average Entropy (False)', color = 'gray')
 
     plt.title(f'{model_name}: Entropy Evaluations')
     plt.xlabel('Benchmarks')
