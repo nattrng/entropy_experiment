@@ -11,5 +11,7 @@ Experimentation is constrained in this setting. I have not implemented other (po
 
 Ensure that you have sufficient VRAM for your models.
 
-Sample Output
+Sample Outputs
 <img width="3030" height="1843" alt="image" src="https://github.com/user-attachments/assets/7a84749d-3f9c-410c-ae75-c79524d2a54c" />
+
+<img width="3004" height="1843" alt="image" src="https://github.com/user-attachments/assets/9c31c31c-24f7-41f4-97aa-6a5e1959e121" />
